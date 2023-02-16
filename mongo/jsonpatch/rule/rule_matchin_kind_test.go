@@ -39,40 +39,40 @@ type objectB struct {
 func TestRuleMatchingKindEqualType(t *testing.T) {
 	t.Parallel()
 
-	rule := MatchingKindRule{Instance: ""}
+	rule := MatchingKindRule{Reference: ""}
 	require.NoError(t, rule.Validate(operation.Spec{Value: "hello"}))
 
-	rule = MatchingKindRule{Instance: uint32(0)}
+	rule = MatchingKindRule{Reference: uint32(0)}
 	require.NoError(t, rule.Validate(operation.Spec{Value: uint32(4)}))
 
-	rule = MatchingKindRule{Instance: []int{}}
+	rule = MatchingKindRule{Reference: []int{}}
 	require.NoError(t, rule.Validate(operation.Spec{Value: []int{1, 2, 3}}))
 
-	rule = MatchingKindRule{Instance: objectA{}}
+	rule = MatchingKindRule{Reference: objectA{}}
 	require.NoError(t, rule.Validate(operation.Spec{Value: objectB{}}))
 }
 
 func TestRuleMatchingKindNotEqualType(t *testing.T) {
 	t.Parallel()
 
-	rule := MatchingKindRule{Instance: "", Path: "a"}
+	rule := MatchingKindRule{Reference: "", Path: "a"}
 	err := rule.Validate(operation.Spec{Value: 1})
 	require.Error(t, err)
 	require.Equal(t, "'a' has invalid kind 'int', must be 'string'", err.Error())
 
-	rule = MatchingKindRule{Instance: []string{}, Path: "a"}
+	rule = MatchingKindRule{Reference: []string{}, Path: "a"}
 	err = rule.Validate(operation.Spec{Value: []int{1, 2, 3}})
 	require.Error(t, err)
 	require.Equal(t, "'a(item)' has invalid kind 'int', must be 'string'", err.Error())
 
-	rule = MatchingKindRule{Instance: objectA{}}
+	rule = MatchingKindRule{Reference: objectA{}}
 	err = rule.Validate(operation.Spec{Value: struct {
 		aa string
 	}{}})
 	require.Error(t, err)
 	require.Equal(t, "unknown field 'aa'", err.Error())
 
-	rule = MatchingKindRule{Instance: objectA{}}
+	rule = MatchingKindRule{Reference: objectA{}}
 	err = rule.Validate(operation.Spec{Value: struct {
 		nested struct {
 			c string
@@ -81,7 +81,7 @@ func TestRuleMatchingKindNotEqualType(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, "unknown field 'c'", err.Error())
 
-	rule = MatchingKindRule{Instance: objectA{}}
+	rule = MatchingKindRule{Reference: objectA{}}
 	err = rule.Validate(operation.Spec{Value: struct {
 		obj_arr []struct { //nolint:revive,stylecheck
 			e string
@@ -90,7 +90,7 @@ func TestRuleMatchingKindNotEqualType(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, "unknown field 'e'", err.Error())
 
-	rule = MatchingKindRule{Instance: objectA{}}
+	rule = MatchingKindRule{Reference: objectA{}}
 	err = rule.Validate(operation.Spec{Value: struct {
 		mapping map[string]struct {
 			e string

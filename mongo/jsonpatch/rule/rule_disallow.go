@@ -13,7 +13,7 @@ type DisallowRule struct {
 }
 
 // NewInstance instantiate new rule instance for field.
-func (d *DisallowRule) NewInstance(path string, _ reflect.Kind, instance interface{}, value string) (Rule, error) {
+func (d *DisallowRule) NewInstance(path string, _ reflect.Kind, _ interface{}, value string) (Rule, error) {
 	disallow, err := getBoolIfNotEmpty(value, path, "DisallowRule")
 	if err != nil {
 		return nil, err
