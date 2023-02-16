@@ -2,6 +2,7 @@
 package rule
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/StevenCyb/go-mongo-tools/mongo/jsonpatch/operation"
@@ -61,7 +62,7 @@ func (m MatchingKindRule) deepCompareType(
 			(referenceKind == reflect.Array || referenceKind == reflect.Slice) {
 			referenceValueElem := reflect.Zero(referenceType.Elem())
 
-			return m.deepCompareType(m.Path, referenceValueElem, objectValue, definedOperation)
+			return m.deepCompareType(m.Path+".[*]", referenceValueElem, objectValue, definedOperation)
 		}
 	}
 
@@ -82,7 +83,7 @@ func (m MatchingKindRule) deepCompareType(
 		objectValueElem := reflect.Zero(objectType.Elem())
 		err = m.deepCompareIterable(path, referenceValueElem, objectValueElem, definedOperation)
 	case reflect.Struct:
-		err = m.deepCompareStruct(referenceValue, objectValue, definedOperation)
+		err = m.deepCompareStruct(path, referenceValue, objectValue, definedOperation)
 	}
 
 	return err
@@ -104,17 +105,22 @@ func (m MatchingKindRule) deepCompareIterable(
 		}
 	}
 
-	return m.deepCompareType(path+"(item)", referenceValue, objectValue, definedOperation)
+	return m.deepCompareType(path+".[*]", referenceValue, objectValue, definedOperation)
 }
 
 func (m MatchingKindRule) deepCompareStruct(
-	referenceValue, objectValue reflect.Value, definedOperation operation.Operation,
+	path string, referenceValue, objectValue reflect.Value, definedOperation operation.Operation,
 ) error {
 	var (
 		err           error
 		referenceType = referenceValue.Type()
 		objectType    = objectValue.Type()
+		currentPath   = path
 	)
+
+	if path != "" {
+		path = path + "."
+	}
 
 	for i := 0; i < objectType.NumField(); i++ {
 		var (
@@ -122,6 +128,7 @@ func (m MatchingKindRule) deepCompareStruct(
 			objectName  = objectField.Name
 			found       = false
 		)
+		currentPath = fmt.Sprintf("%s%s", path, objectName)
 
 		for i := 0; i < referenceType.NumField(); i++ {
 			var (
@@ -135,7 +142,7 @@ func (m MatchingKindRule) deepCompareStruct(
 			}
 
 			if objectName == referenceName {
-				err = m.deepCompareType(objectName, zeroValue,
+				err = m.deepCompareType(currentPath, zeroValue,
 					reflect.Zero(objectField.Type), definedOperation)
 
 				found = true
@@ -145,7 +152,7 @@ func (m MatchingKindRule) deepCompareStruct(
 		}
 
 		if !found {
-			err = UnknownFieldError{name: objectName}
+			err = UnknownFieldError{name: currentPath}
 
 			break
 		}
@@ -161,7 +168,12 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 		err           error
 		referenceType = referenceValue.Type()
 		objectType    = objectValue.Type()
+		currentPath   = path
 	)
+
+	if path != "" {
+		path = path + "."
+	}
 
 	if objectType.Key().Kind() != reflect.String {
 		return TypeMismatchError{
@@ -174,9 +186,10 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 			objectField = objectValue.MapIndex(key)
 			found       = false
 		)
+		currentPath = fmt.Sprintf("%s%s", path, key.String())
 
 		if objectField.Kind() == reflect.Interface {
-			objectField = reflect.ValueOf(objectField)
+			objectField = reflect.ValueOf(objectField.Interface())
 		}
 
 		for i := 0; i < referenceType.NumField(); i++ {
@@ -191,7 +204,7 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 			}
 
 			if key.String() == referenceName {
-				err = m.deepCompareType(key.String(), zeroValue, objectField, definedOperation)
+				err = m.deepCompareType(currentPath, zeroValue, objectField, definedOperation)
 
 				found = true
 
@@ -200,7 +213,7 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 		}
 
 		if !found {
-			err = UnknownFieldError{name: key.String()}
+			err = UnknownFieldError{name: currentPath}
 
 			break
 		}

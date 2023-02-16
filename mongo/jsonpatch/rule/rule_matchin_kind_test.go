@@ -63,7 +63,7 @@ func TestRuleMatchingKindNotEqualType(t *testing.T) {
 	rule = MatchingKindRule{Reference: []string{}, Path: "a"}
 	err = rule.Validate(operation.Spec{Value: []int{1, 2, 3}})
 	require.Error(t, err)
-	require.Equal(t, "'a(item)' has invalid kind 'int', must be 'string'", err.Error())
+	require.Equal(t, "'a.[*]' has invalid kind 'int', must be 'string'", err.Error())
 
 	rule = MatchingKindRule{Reference: objectA{}}
 	err = rule.Validate(operation.Spec{Value: struct {
@@ -79,7 +79,7 @@ func TestRuleMatchingKindNotEqualType(t *testing.T) {
 		}
 	}{}})
 	require.Error(t, err)
-	require.Equal(t, "unknown field 'c'", err.Error())
+	require.Equal(t, "unknown field 'nested.c'", err.Error())
 
 	rule = MatchingKindRule{Reference: objectA{}}
 	err = rule.Validate(operation.Spec{Value: struct {
@@ -88,7 +88,7 @@ func TestRuleMatchingKindNotEqualType(t *testing.T) {
 		}
 	}{}})
 	require.Error(t, err)
-	require.Equal(t, "unknown field 'e'", err.Error())
+	require.Equal(t, "unknown field 'obj_arr.[*].e'", err.Error())
 
 	rule = MatchingKindRule{Reference: objectA{}}
 	err = rule.Validate(operation.Spec{Value: struct {
@@ -97,5 +97,5 @@ func TestRuleMatchingKindNotEqualType(t *testing.T) {
 		}
 	}{}})
 	require.Error(t, err)
-	require.Equal(t, "unknown field 'e'", err.Error())
+	require.Equal(t, "unknown field 'mapping.[*].e'", err.Error())
 }
