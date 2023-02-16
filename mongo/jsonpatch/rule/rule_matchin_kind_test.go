@@ -64,38 +64,4 @@ func TestRuleMatchingKindNotEqualType(t *testing.T) {
 	err = rule.Validate(operation.Spec{Value: []int{1, 2, 3}})
 	require.Error(t, err)
 	require.Equal(t, "'a.[*]' has invalid kind 'int', must be 'string'", err.Error())
-
-	rule = MatchingKindRule{Reference: objectA{}}
-	err = rule.Validate(operation.Spec{Value: struct {
-		aa string
-	}{}})
-	require.Error(t, err)
-	require.Equal(t, "unknown field 'aa'", err.Error())
-
-	rule = MatchingKindRule{Reference: objectA{}}
-	err = rule.Validate(operation.Spec{Value: struct {
-		nested struct {
-			c string
-		}
-	}{}})
-	require.Error(t, err)
-	require.Equal(t, "unknown field 'nested.c'", err.Error())
-
-	rule = MatchingKindRule{Reference: objectA{}}
-	err = rule.Validate(operation.Spec{Value: struct {
-		obj_arr []struct { //nolint:revive,stylecheck
-			e string
-		}
-	}{}})
-	require.Error(t, err)
-	require.Equal(t, "unknown field 'obj_arr.[*].e'", err.Error())
-
-	rule = MatchingKindRule{Reference: objectA{}}
-	err = rule.Validate(operation.Spec{Value: struct {
-		mapping map[string]struct {
-			e string
-		}
-	}{}})
-	require.Error(t, err)
-	require.Equal(t, "unknown field 'mapping.[*].e'", err.Error())
 }

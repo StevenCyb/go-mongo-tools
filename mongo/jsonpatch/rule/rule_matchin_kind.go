@@ -57,6 +57,12 @@ func (m MatchingKindRule) deepCompareType(
 		objectKind    = objectType.Kind()
 	)
 
+	if objectKind == reflect.Interface {
+		objectValue = reflect.ValueOf(objectValue.Interface())
+		objectType = objectValue.Type()
+		objectKind = objectType.Kind()
+	}
+
 	if definedOperation == operation.AddOperation {
 		if objectKind != reflect.Array && objectKind != reflect.Slice &&
 			(referenceKind == reflect.Array || referenceKind == reflect.Slice) {
@@ -78,9 +84,22 @@ func (m MatchingKindRule) deepCompareType(
 	case reflect.Ptr:
 		err = m.deepCompareType(path, reflect.Zero(referenceType.Elem()),
 			reflect.Zero(objectType.Elem()), definedOperation)
-	case reflect.Array, reflect.Map, reflect.Slice:
+	case reflect.Array, reflect.Slice:
+		if objectValue.Len() == 0 {
+			return nil
+		}
+
 		referenceValueElem := reflect.Zero(referenceType.Elem())
-		objectValueElem := reflect.Zero(objectType.Elem())
+		objectValueElem := objectValue.Index(0)
+		err = m.deepCompareIterable(path, referenceValueElem, objectValueElem, definedOperation)
+	case reflect.Map:
+		keys := objectValue.MapKeys()
+		if len(keys) == 0 {
+			return nil
+		}
+
+		referenceValueElem := reflect.Zero(referenceType.Elem())
+		objectValueElem := objectValue.MapIndex(keys[0])
 		err = m.deepCompareIterable(path, referenceValueElem, objectValueElem, definedOperation)
 	case reflect.Struct:
 		err = m.deepCompareStruct(path, referenceValue, objectValue, definedOperation)
