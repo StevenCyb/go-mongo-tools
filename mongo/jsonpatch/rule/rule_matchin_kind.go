@@ -187,8 +187,7 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 			}
 
 			if key.String() == referenceName {
-				err = m.deepCompareType(key.String(), zeroValue,
-					reflect.Zero(objectField.Type()), definedOperation)
+				err = m.deepCompareType(key.String(), zeroValue, objectField, definedOperation)
 
 				found = true
 

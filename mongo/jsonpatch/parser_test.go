@@ -1,4 +1,5 @@
 package jsonpatch
+//nolint:govet
 
 import (
 	"context"
