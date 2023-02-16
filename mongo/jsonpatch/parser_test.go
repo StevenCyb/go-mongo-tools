@@ -1,4 +1,5 @@
 package jsonpatch
+//nolint:govet
 
 import (
 	"context"
@@ -241,7 +242,7 @@ func TestParsingArrayAdd(t *testing.T) {
 		query, err := parser.Parse(operation.Spec{
 			Operation: operation.AddOperation,
 			Path:      "nested",
-			Value:     []map[string]string{{"name": "A"}},
+			Value:     []map[string]interface{}{{"name": "A", "number": 1}},
 		})
 		require.NoError(t, err)
 		require.NotNil(t, query)
@@ -252,7 +253,7 @@ func TestParsingArrayAdd(t *testing.T) {
 		query, err := parser.Parse(operation.Spec{
 			Operation: operation.AddOperation,
 			Path:      "nested",
-			Value:     map[string]string{"name": "A"},
+			Value:     map[string]interface{}{"name": "A", "number": 1},
 		})
 		require.NoError(t, err)
 		require.NotNil(t, query)
