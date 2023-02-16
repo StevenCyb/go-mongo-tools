@@ -3,6 +3,7 @@ package jsonpatch
 import (
 	"context"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/StevenCyb/go-mongo-tools/errs"
@@ -31,11 +32,16 @@ func ExecuteFailedTest(t *testing.T, parser Parser, expectedError error, operati
 
 // DummyDoc is a simple dummy doc for mongo tests.
 type DummyDoc struct {
-	ID string  `bson:"_id" jp_disallow:"true"` //nolint:tagliatelle
-	A  string  `bson:"a"`
-	B  string  `bson:"b"`
-	D  []int   `bson:"d"`
-	C  float32 `bson:"c"`
+	ID     string        `bson:"_id" jp_disallow:"true"` //nolint:tagliatelle
+	A      string        `bson:"a"`
+	B      string        `bson:"b"`
+	D      []int         `bson:"d"`
+	C      float32       `bson:"c"`
+	Nested []DummySubDoc `bson:"nested"`
+}
+type DummySubDoc struct {
+	Name   string `bson:"name"`
+	Number *int   `bson:"number"`
 }
 
 func TestSingleRemoveOperation(t *testing.T) {
@@ -202,8 +208,74 @@ func TestSmartParsing(t *testing.T) {
 	})
 }
 
+func TestParsingArrayAdd(t *testing.T) {
+	t.Parallel()
+
+	parser, err := NewSmartParser(reflect.TypeOf(DummyDoc{}))
+	require.NoError(t, err)
+
+	t.Run("Element_Success", func(t *testing.T) {
+		t.Parallel()
+		query, err := parser.Parse(operation.Spec{
+			Operation: operation.AddOperation,
+			Path:      "d",
+			Value:     2,
+		})
+		require.NoError(t, err)
+		require.NotNil(t, query)
+	})
+
+	t.Run("Slice_Success", func(t *testing.T) {
+		t.Parallel()
+		query, err := parser.Parse(operation.Spec{
+			Operation: operation.AddOperation,
+			Path:      "d",
+			Value:     []int{2},
+		})
+		require.NoError(t, err)
+		require.NotNil(t, query)
+	})
+
+	t.Run("ObjectElementArray_Success", func(t *testing.T) {
+		t.Parallel()
+		query, err := parser.Parse(operation.Spec{
+			Operation: operation.AddOperation,
+			Path:      "nested",
+			Value:     []map[string]string{{"name": "A"}},
+		})
+		require.NoError(t, err)
+		require.NotNil(t, query)
+	})
+
+	t.Run("ObjectElement_Success", func(t *testing.T) {
+		t.Parallel()
+		query, err := parser.Parse(operation.Spec{
+			Operation: operation.AddOperation,
+			Path:      "nested",
+			Value:     map[string]string{"name": "A"},
+		})
+		require.NoError(t, err)
+		require.NotNil(t, query)
+	})
+
+	t.Run("ObjectElement_Fail", func(t *testing.T) {
+		t.Parallel()
+		query, err := parser.Parse(operation.Spec{
+			Operation: operation.AddOperation,
+			Path:      "nested",
+			Value:     map[string]string{"x": "y"},
+		})
+		require.Error(t, err)
+		require.Nil(t, query)
+	})
+}
+
 func TestInterpretation(t *testing.T) {
 	t.Parallel()
+
+	if runtime.GOOS == "darwin" {
+		t.Skip("Not running on darwin")
+	}
 
 	ctx := context.Background()
 	server := testutil.NewStrikemongoServer(t)

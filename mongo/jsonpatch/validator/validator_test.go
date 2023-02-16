@@ -15,15 +15,15 @@ import (
 
 type demoRule struct{}
 
-func (d demoRule) NewInstance(patch string, kind reflect.Kind, instance interface{}, value string) (rule.Rule, error) { //nolint:ireturn,lll
+func (d demoRule) NewInstance(_ string, _ reflect.Kind, _ interface{}, value string) (rule.Rule, error) { //nolint:ireturn,lll
 	return nil, nil
 }
 
-func (d demoRule) NewInheritInstance(patch string, kind reflect.Kind, instance interface{}) (rule.Rule, error) { //nolint:ireturn,lll
+func (d demoRule) NewInheritInstance(_ string, _ reflect.Kind, _ interface{}) (rule.Rule, error) { //nolint:ireturn,lll
 	return nil, nil
 }
 
-func (d demoRule) Validate(operationSpec operation.Spec) error {
+func (d demoRule) Validate(_ operation.Spec) error {
 	return nil
 }
 
@@ -216,56 +216,56 @@ func TestUseReferenceWithSimpleTypes(t *testing.T) { //nolint:funlen
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"b": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "b"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "b"},
 		},
 		"c": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Int},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: 0, Path: "c"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: 0, Path: "c"},
 		},
 		"d": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Slice},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: []string{}, Path: "d"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: []string{}, Path: "d"},
 		},
 		"e": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Slice},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: []int{}, Path: "e"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: []int{}, Path: "e"},
 		},
 		"f": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Map},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: map[string]string{}, Path: "f"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: map[string]string{}, Path: "f"},
 		},
 		"g": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Map},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: map[string]int{}, Path: "g"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: map[string]int{}, Path: "g"},
 		},
 		"h": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				A string
 				B string `bson:"b"`
 			}{}, Path: "h"},
 		},
 		"h.b": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "h.b"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "h.b"},
 		},
 	}
 	expectedWildcardRules := map[operation.Path]map[string]rule.Rule{
 		"d.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "d.*"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "d.*"},
 		},
 		"e.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Int},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: 0, Path: "e.*"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: 0, Path: "e.*"},
 		},
 		"f.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "f.*"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "f.*"},
 		},
 		"g.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Int},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: 0, Path: "g.*"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: 0, Path: "g.*"},
 		},
 	}
 
@@ -291,7 +291,7 @@ func TestUseReferenceComplexStruct(t *testing.T) {
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				A struct {
 					B string `bson:"b"`
 				} `bson:"a"`
@@ -299,20 +299,28 @@ func TestUseReferenceComplexStruct(t *testing.T) {
 		},
 		"a.a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				B string `bson:"b"`
 			}{}, Path: "a.a"},
 		},
 		"a.a.b": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.a.b"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.a.b"},
 		},
 	}
 	expectedWildcardRules := map[operation.Path]map[string]rule.Rule{}
 
 	require.NoError(t, err)
-	require.Equal(t, expectedRule, validator.rules)
-	require.Equal(t, expectedWildcardRules, validator.wildcardRules)
+
+	require.NoError(t, err)
+	assertDeepEqual(t, expectedRule, validator.rules)
+	assertDeepEqual(t, expectedWildcardRules, validator.wildcardRules)
+}
+
+func assertDeepEqual(t *testing.T, expected, actual interface{}) {
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Objects not equal. Expected %+v, but got %+v", expected, actual)
+	}
 }
 
 func TestUseReferenceComplexArray(t *testing.T) {
@@ -330,7 +338,7 @@ func TestUseReferenceComplexArray(t *testing.T) {
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"b": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Slice},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: []struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: []struct {
 				A string `bson:"a"`
 			}{}, Path: "b"},
 		},
@@ -338,13 +346,13 @@ func TestUseReferenceComplexArray(t *testing.T) {
 	expectedWildcardRules := map[operation.Path]map[string]rule.Rule{
 		"b.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				A string `bson:"a"`
 			}{}, Path: "b.*"},
 		},
 		"b.*.a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "b.*.a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "b.*.a"},
 		},
 	}
 
@@ -368,7 +376,7 @@ func TestUseReferenceComplexMap(t *testing.T) {
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"c": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Map},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: map[string]struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: map[string]struct {
 				A string `bson:"a"`
 			}{}, Path: "c"},
 		},
@@ -376,13 +384,13 @@ func TestUseReferenceComplexMap(t *testing.T) {
 	expectedWildcardRules := map[operation.Path]map[string]rule.Rule{
 		"c.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				A string `bson:"a"`
 			}{}, Path: "c.*"},
 		},
 		"c.*.a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "c.*.a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "c.*.a"},
 		},
 	}
 
@@ -409,13 +417,13 @@ func TestUseReferenceComplexNested(t *testing.T) { //nolint:funlen
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"d": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Map},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: map[string][]struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: map[string][]struct {
 				A string `bson:"a"`
 			}{}, Path: "d"},
 		},
 		"e": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Slice},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: []map[string]struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: []map[string]struct {
 				A string `bson:"a"`
 			}{}, Path: "e"},
 		},
@@ -423,35 +431,35 @@ func TestUseReferenceComplexNested(t *testing.T) { //nolint:funlen
 	expectedWildcardRules := map[operation.Path]map[string]rule.Rule{
 		"d.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Slice},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: []struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: []struct {
 				A string `bson:"a"`
 			}{}, Path: "d.*"},
 		},
 		"d.*.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				A string `bson:"a"`
 			}{}, Path: "d.*.*"},
 		},
 		"d.*.*.a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "d.*.*.a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "d.*.*.a"},
 		},
 		"e.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Map},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: map[string]struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: map[string]struct {
 				A string `bson:"a"`
 			}{}, Path: "e.*"},
 		},
 		"e.*.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				A string `bson:"a"`
 			}{}, Path: "e.*.*"},
 		},
 		"e.*.*.a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "e.*.*.a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "e.*.*.a"},
 		},
 	}
 
@@ -479,40 +487,40 @@ func TestUseReferenceWithSimpleRules(t *testing.T) { //nolint:funlen
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a"},
 		},
 		"b": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "b"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "b"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 		},
 		"c": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "c"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "c"},
 			"jp_min":                                &rule.MinRule{Min: 3},
 		},
 		"d": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "d"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "d"},
 			"jp_max":                                &rule.MaxRule{Max: 3},
 		},
 		"e": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "e"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "e"},
 			"jp_expression": &rule.ExpressionRule{
 				Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`),
 			},
 		},
 		"f": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "f"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "f"},
 			"jp_op_allowed": &rule.AllowedOperationsRule{
 				Operations: []operation.Operation{operation.AddOperation, operation.RemoveOperation},
 			},
 		},
 		"g": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "g"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "g"},
 			"jp_op_disallowed": &rule.DisallowedOperationsRule{
 				Operations: []operation.Operation{operation.AddOperation, operation.RemoveOperation},
 			},
@@ -551,7 +559,7 @@ func TestUseReferenceWithHeredityStruct(t *testing.T) { //nolint:funlen
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: demoStruct{}, Path: "a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: demoStruct{}, Path: "a"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -560,7 +568,7 @@ func TestUseReferenceWithHeredityStruct(t *testing.T) { //nolint:funlen
 		},
 		"a.do_inherit": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.do_inherit"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.do_inherit"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -569,7 +577,7 @@ func TestUseReferenceWithHeredityStruct(t *testing.T) { //nolint:funlen
 		},
 		"a.do_overwrite": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.do_overwrite"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.do_overwrite"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: false},
 			"jp_min":                                &rule.MinRule{Min: 2}, "jp_max": &rule.MaxRule{Max: 2},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\d+$`, Regex: *regexp.MustCompile(`^\d+$`)},
@@ -578,7 +586,7 @@ func TestUseReferenceWithHeredityStruct(t *testing.T) { //nolint:funlen
 		},
 		"a.nested": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				DoInherit string `bson:"do_inherit"`
 				Nested    struct {
 					DoInherit string `bson:"do_inherit"`
@@ -592,7 +600,7 @@ func TestUseReferenceWithHeredityStruct(t *testing.T) { //nolint:funlen
 		},
 		"a.nested.do_inherit": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.nested.do_inherit"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.nested.do_inherit"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -601,7 +609,7 @@ func TestUseReferenceWithHeredityStruct(t *testing.T) { //nolint:funlen
 		},
 		"a.nested.nested": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind": &rule.MatchingKindRule{Instance: struct {
+			"jp_general_matching_kind": &rule.MatchingKindRule{Reference: struct {
 				DoInherit string `bson:"do_inherit"`
 			}{}, Path: "a.nested.nested"},
 			"jp_disallow": &rule.DisallowRule{Disallow: true},
@@ -612,7 +620,7 @@ func TestUseReferenceWithHeredityStruct(t *testing.T) { //nolint:funlen
 		},
 		"a.nested.nested.do_inherit": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.nested.nested.do_inherit"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.nested.nested.do_inherit"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -646,7 +654,7 @@ func TestUseReferenceWithHeredityArray(t *testing.T) {
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Slice},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: []demoStruct{}, Path: "a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: []demoStruct{}, Path: "a"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -657,7 +665,7 @@ func TestUseReferenceWithHeredityArray(t *testing.T) {
 	expectedWildcardRules := map[operation.Path]map[string]rule.Rule{
 		"a.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: demoStruct{}, Path: "a.*"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: demoStruct{}, Path: "a.*"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -666,7 +674,7 @@ func TestUseReferenceWithHeredityArray(t *testing.T) {
 		},
 		"a.*.do_inherit": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.*.do_inherit"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.*.do_inherit"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -675,7 +683,7 @@ func TestUseReferenceWithHeredityArray(t *testing.T) {
 		},
 		"a.*.do_overwrite": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.*.do_overwrite"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.*.do_overwrite"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: false},
 			"jp_min":                                &rule.MinRule{Min: 2}, "jp_max": &rule.MaxRule{Max: 2},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\d+$`, Regex: *regexp.MustCompile(`^\d+$`)},
@@ -708,7 +716,7 @@ func TestUseReferenceWithHeredityMap(t *testing.T) {
 	expectedRule := map[operation.Path]map[string]rule.Rule{
 		"a": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Map},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: map[string]demoStruct{}, Path: "a"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: map[string]demoStruct{}, Path: "a"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -719,7 +727,7 @@ func TestUseReferenceWithHeredityMap(t *testing.T) {
 	expectedWildcardRules := map[operation.Path]map[string]rule.Rule{
 		"a.*": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.Struct},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: demoStruct{}, Path: "a.*"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: demoStruct{}, Path: "a.*"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -728,7 +736,7 @@ func TestUseReferenceWithHeredityMap(t *testing.T) {
 		},
 		"a.*.do_inherit": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.*.do_inherit"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.*.do_inherit"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: true},
 			"jp_min":                                &rule.MinRule{Min: 3}, "jp_max": &rule.MaxRule{Max: 3},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\w+$`, Regex: *regexp.MustCompile(`^\w+$`)},
@@ -737,7 +745,7 @@ func TestUseReferenceWithHeredityMap(t *testing.T) {
 		},
 		"a.*.do_overwrite": {
 			"jp_general_matching_operation_to_kind": &rule.MatchingOperationToKindRule{Kind: reflect.String},
-			"jp_general_matching_kind":              &rule.MatchingKindRule{Instance: "", Path: "a.*.do_overwrite"},
+			"jp_general_matching_kind":              &rule.MatchingKindRule{Reference: "", Path: "a.*.do_overwrite"},
 			"jp_disallow":                           &rule.DisallowRule{Disallow: false},
 			"jp_min":                                &rule.MinRule{Min: 2}, "jp_max": &rule.MaxRule{Max: 2},
 			"jp_expression":    &rule.ExpressionRule{Expression: `^\d+$`, Regex: *regexp.MustCompile(`^\d+$`)},

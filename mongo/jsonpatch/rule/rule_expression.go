@@ -17,7 +17,7 @@ type ExpressionRule struct {
 }
 
 // NewInstance instantiate new rule instance for field.
-func (e *ExpressionRule) NewInstance(path string, _ reflect.Kind, instance interface{}, value string) (Rule, error) {
+func (e *ExpressionRule) NewInstance(path string, _ reflect.Kind, _ interface{}, value string) (Rule, error) {
 	regex, err := getRegexpIfNotEmpty(value, path, "ExpressionRule")
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (e *ExpressionRule) NewInstance(path string, _ reflect.Kind, instance inter
 }
 
 // NewInheritInstance instantiate new rule instance based on given rule.
-func (e *ExpressionRule) NewInheritInstance(path string, _ reflect.Kind, instance interface{}) (Rule, error) {
+func (e *ExpressionRule) NewInheritInstance(path string, _ reflect.Kind, _ interface{}) (Rule, error) {
 	return &ExpressionRule{Expression: e.Expression, Regex: e.Regex}, nil
 }
 

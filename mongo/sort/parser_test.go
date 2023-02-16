@@ -3,6 +3,7 @@ package sort
 
 import (
 	"context"
+	"runtime"
 	"testing"
 
 	"github.com/StevenCyb/go-mongo-tools/errs"
@@ -121,6 +122,10 @@ func TestParsing(t *testing.T) {
 
 func TestInterpretation(t *testing.T) {
 	t.Parallel()
+
+	if runtime.GOOS == "darwin" {
+		t.Skip("Not running on darwin")
+	}
 
 	ctx := context.Background()
 	server := testutil.NewStrikemongoServer(t)

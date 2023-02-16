@@ -217,7 +217,7 @@ func (v *Validator) parseReferenceStruct(
 }
 
 func (v *Validator) addRule(
-	path string, kind reflect.Kind, tag reflect.StructTag, instance interface{}, inheritedRules *map[string]rule.Rule,
+	path string, kind reflect.Kind, tag reflect.StructTag, reference interface{}, inheritedRules *map[string]rule.Rule,
 ) error {
 	if kind == reflect.Invalid {
 		return InvalidTypeError{path: path}
@@ -229,21 +229,21 @@ func (v *Validator) addRule(
 	)
 
 	for name, rule := range *inheritedRules {
-		rules[name], err = rule.NewInheritInstance(path, kind, instance)
+		rules[name], err = rule.NewInheritInstance(path, kind, reference)
 		if err != nil {
 			return fmt.Errorf("could not inherit rule on '%s': %w", path, err)
 		}
 	}
 
 	for name, rule := range v.generalRules {
-		rules[name], err = rule.NewInstance(path, kind, instance, "")
+		rules[name], err = rule.NewInstance(path, kind, reference, "")
 		if err != nil {
 			return fmt.Errorf("could not instantiate rule on '%s': %w", path, err)
 		}
 	}
 
 	if tag != "" {
-		err := v.composeRulesFromTags(path, kind, instance, tag, &rules, inheritedRules)
+		err := v.composeRulesFromTags(path, kind, reference, tag, &rules, inheritedRules)
 		if err != nil {
 			return err
 		}
@@ -259,7 +259,7 @@ func (v *Validator) addRule(
 }
 
 func (v *Validator) composeRulesFromTags(
-	path string, kind reflect.Kind, instance interface{},
+	path string, kind reflect.Kind, reference interface{},
 	tag reflect.StructTag, rules, inheritedRules *map[string]rule.Rule,
 ) error {
 	tagsToInherit := []string{}
@@ -287,7 +287,7 @@ func (v *Validator) composeRulesFromTags(
 
 		value, use := tag.Lookup(name)
 		if use {
-			newRule, err := rule.NewInstance(path, kind, instance, value)
+			newRule, err := rule.NewInstance(path, kind, reference, value)
 			if err != nil {
 				return fmt.Errorf("could not instantiate rule on '%s': %w", path, err)
 			}
