@@ -1,4 +1,5 @@
 package jsonpatch
+
 //nolint:govet
 
 import (
@@ -42,6 +43,7 @@ type DummyDoc struct {
 }
 type DummySubDoc struct {
 	Name   string `bson:"name"`
+	Gender string `bson:"gender"`
 	Number *int   `bson:"number"`
 }
 
@@ -268,6 +270,35 @@ func TestParsingArrayAdd(t *testing.T) {
 		})
 		require.Error(t, err)
 		require.Nil(t, query)
+	})
+}
+
+func TestParsingArrayReplace(t *testing.T) {
+	t.Parallel()
+
+	parser, err := NewSmartParser(reflect.TypeOf(DummyDoc{}))
+	require.NoError(t, err)
+
+	t.Run("SimpleElement_Success", func(t *testing.T) {
+		t.Parallel()
+		query, err := parser.Parse(operation.Spec{
+			Operation: operation.ReplaceOperation,
+			Path:      "d",
+			Value:     []int{2},
+		})
+		require.NoError(t, err)
+		require.NotNil(t, query)
+	})
+
+	t.Run("ObjectElement_Success", func(t *testing.T) {
+		t.Parallel()
+		query, err := parser.Parse(operation.Spec{
+			Operation: operation.ReplaceOperation,
+			Path:      "nested",
+			Value:     []map[string]string{{"name": "A", "gender": "x"}},
+		})
+		require.NoError(t, err)
+		require.NotNil(t, query)
 	})
 }
 
