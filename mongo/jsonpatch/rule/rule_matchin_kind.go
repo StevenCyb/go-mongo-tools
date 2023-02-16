@@ -175,6 +175,10 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 			found       = false
 		)
 
+		if objectField.Kind() == reflect.Interface {
+			objectField = reflect.ValueOf(objectField)
+		}
+
 		for i := 0; i < referenceType.NumField(); i++ {
 			var (
 				referenceField = referenceType.Field(i)
