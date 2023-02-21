@@ -82,7 +82,7 @@ import (
   // ...
 ```
 
-### Witch reference model that enforce structure and types automatically
+### With reference model that enforce structure and types automatically
 
 By using `NewSmartParser` and providing a reference type of the API resource, the parser automatically determine valid patches and types.
 Only fields with `bson` tag are considered.
