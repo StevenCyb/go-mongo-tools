@@ -6,6 +6,6 @@
 
 This project contains useful functionality to build a CRUD Golang API with MongoDB. This includes the following packages:
 
-- [RSQL parser to search with Mongo queries](parser/mongo/rsql/README.md)
-- [Sort parser to sort document results](parser/mongo/sort/README.md)
-- [JSON Patch parser to perform document patches](parser/mongo/jsonpatch/README.md)
+- [RSQL parser to search with Mongo queries](mongo/rsql/README.md)
+- [Sort parser to sort document results](mongo/sort/README.md)
+- [JSON Patch parser to perform document patches](mongo/jsonpatch/README.md)
