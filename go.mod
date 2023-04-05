@@ -1,6 +1,6 @@
 module github.com/StevenCyb/go-mongo-tools
 
-go 1.18
+go 1.20
 
 require (
 	github.com/g8rswimmer/error-chain v1.0.0
