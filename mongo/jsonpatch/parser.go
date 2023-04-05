@@ -85,6 +85,12 @@ func (p Parser) generateMongoQuery(operationSpecs ...operation.Spec) (bson.A, er
 	)
 
 	for _, operationSpec := range operationSpecs {
+		if operationSpec.Value != nil &&
+			fmt.Sprintf("%v", operationSpec.Value) == "map[]" ||
+			fmt.Sprintf("%v", operationSpec.Value) == "{}" {
+			operationSpec.Value = nil
+		}
+
 		switch operationSpec.Operation {
 		case operation.RemoveOperation:
 			if noSuffix.Match([]byte(operationSpec.Path)) {
