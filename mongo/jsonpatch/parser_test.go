@@ -34,18 +34,19 @@ func ExecuteFailedTest(t *testing.T, parser Parser, expectedError error, operati
 
 // DummyDoc is a simple dummy doc for mongo tests.
 type DummyDoc struct {
-	ID     string        `bson:"_id" jp_disallow:"true"` //nolint:tagliatelle
-	A      string        `bson:"a"`
-	B      string        `bson:"b"`
-	D      []int         `bson:"d"`
-	C      float32       `bson:"c"`
-	Nested []DummySubDoc `bson:"nested"`
-	Obj    DummySubDoc   `bson:"obj"`
+	C      float32           `bson:"c"`
+	Nested []DummySubDoc     `bson:"nested"`
+	Obj    DummySubDoc       `bson:"obj"`
+	ID     string            `bson:"_id" jp_disallow:"true"` //nolint:tagliatelle
+	A      string            `bson:"a"`
+	B      string            `bson:"b"`
+	D      []int             `bson:"d"`
+	E      map[string]string `bson:"e"`
 }
 type DummySubDoc struct {
+	Number *int   `bson:"number"`
 	Name   string `bson:"name"`
 	Gender string `bson:"gender"`
-	Number *int   `bson:"number"`
 }
 
 func TestSingleRemoveOperation(t *testing.T) {
@@ -103,7 +104,7 @@ func TestSingleReplaceOperation(t *testing.T) {
 	value := 1.2
 
 	ExecuteSuccessTest(t, Parser{},
-		bson.A{bson.M{"$set": bson.M{"user.group": 1.2}}},
+		bson.A{bson.M{"$unset": "user.group"}, bson.M{"$set": bson.M{"user.group": 1.2}}},
 		operation.Spec{
 			Operation: operation.ReplaceOperation,
 			Path:      path,
@@ -327,10 +328,10 @@ func TestInterpretation(t *testing.T) {
 		{ID: "3", A: "a3", B: "b3", C: float32(13), D: []int{3}},
 		{ID: "4", A: "a4", B: "b4", C: float32(14), D: []int{4}},
 		{ID: "5", A: "a5", B: "b5", C: float32(15), D: []int{5}},
-		{
-			ID: "6", A: "a6", B: "b6", C: float32(15), D: []int{5},
-			Obj: DummySubDoc{Name: "Anja", Gender: "Femal"},
-		},
+		{ID: "6", Obj: DummySubDoc{Name: "Anja", Gender: "Femal"}},
+		{ID: "7", Obj: DummySubDoc{Name: "Anja"}},
+		{ID: "8", E: map[string]string{"A8": "a8"}},
+		{ID: "9", E: map[string]string{"A9": "a9"}},
 	}
 	itemsInterface := []interface{}{}
 
@@ -345,7 +346,10 @@ func TestInterpretation(t *testing.T) {
 	testReplaceOperation(t, collection, items[2])
 	testMoveOperation(t, collection, items[3])
 	testCopyOperation(t, collection, items[4])
-	testObjectReplaceOperation(t, collection, items[5])
+	testObjectReplaceEmptyOperation(t, collection, items[5])
+	testObjectReplaceOperation(t, collection, items[6])
+	testMapReplaceEmptyOperation(t, collection, items[7])
+	testMapReplaceOperation(t, collection, items[8])
 }
 
 func testRemoveOperation(t *testing.T, collection *mongo.Collection, item DummyDoc) {
@@ -456,7 +460,7 @@ func testCopyOperation(t *testing.T, collection *mongo.Collection, item DummyDoc
 	require.Equal(t, item, resultingDocument)
 }
 
-func testObjectReplaceOperation(t *testing.T, collection *mongo.Collection, item DummyDoc) {
+func testObjectReplaceEmptyOperation(t *testing.T, collection *mongo.Collection, item DummyDoc) {
 	t.Helper()
 
 	ctx := context.Background()
@@ -475,4 +479,70 @@ func testObjectReplaceOperation(t *testing.T, collection *mongo.Collection, item
 	err = result.Decode(&resultingDocument)
 	require.NoError(t, err)
 	require.Equal(t, DummySubDoc{}, resultingDocument.Obj)
+}
+
+func testObjectReplaceOperation(t *testing.T, collection *mongo.Collection, item DummyDoc) {
+	t.Helper()
+
+	item.Obj = DummySubDoc{Gender: "Femal"}
+	ctx := context.Background()
+	parser := Parser{}
+	after := options.After
+	updateOptions := &options.FindOneAndUpdateOptions{ReturnDocument: &after}
+	query, err := parser.Parse(operation.Spec{
+		Operation: operation.ReplaceOperation, Path: "obj", Value: item.Obj,
+	})
+	require.NoError(t, err)
+
+	result := collection.FindOneAndUpdate(ctx, bson.D{{Key: "_id", Value: item.ID}}, query, updateOptions)
+	require.NoError(t, result.Err())
+
+	var resultingDocument DummyDoc
+	err = result.Decode(&resultingDocument)
+	require.NoError(t, err)
+	require.Equal(t, item.Obj, resultingDocument.Obj)
+}
+
+func testMapReplaceEmptyOperation(t *testing.T, collection *mongo.Collection, item DummyDoc) {
+	t.Helper()
+
+	item.E = nil
+	ctx := context.Background()
+	parser := Parser{}
+	after := options.After
+	updateOptions := &options.FindOneAndUpdateOptions{ReturnDocument: &after}
+	query, err := parser.Parse(operation.Spec{
+		Operation: operation.ReplaceOperation, Path: "e", Value: map[string]string{},
+	})
+	require.NoError(t, err)
+
+	result := collection.FindOneAndUpdate(ctx, bson.D{{Key: "_id", Value: item.ID}}, query, updateOptions)
+	require.NoError(t, result.Err())
+
+	var resultingDocument DummyDoc
+	err = result.Decode(&resultingDocument)
+	require.NoError(t, err)
+	require.Equal(t, item.E, resultingDocument.E)
+}
+
+func testMapReplaceOperation(t *testing.T, collection *mongo.Collection, item DummyDoc) {
+	t.Helper()
+
+	item.E = map[string]string{"x": "y"}
+	ctx := context.Background()
+	parser := Parser{}
+	after := options.After
+	updateOptions := &options.FindOneAndUpdateOptions{ReturnDocument: &after}
+	query, err := parser.Parse(operation.Spec{
+		Operation: operation.ReplaceOperation, Path: "e", Value: item.E,
+	})
+	require.NoError(t, err)
+
+	result := collection.FindOneAndUpdate(ctx, bson.D{{Key: "_id", Value: item.ID}}, query, updateOptions)
+	require.NoError(t, result.Err())
+
+	var resultingDocument DummyDoc
+	err = result.Decode(&resultingDocument)
+	require.NoError(t, err)
+	require.Equal(t, item.E, resultingDocument.E)
 }

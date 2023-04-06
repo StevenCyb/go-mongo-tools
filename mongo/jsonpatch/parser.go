@@ -150,6 +150,9 @@ func (p Parser) generateMongoQuery(operationSpecs ...operation.Spec) (bson.A, er
 				},
 			}
 		case operation.ReplaceOperation:
+			query = append(query, bson.M{
+				"$unset": string(operationSpec.Path),
+			})
 			element = bson.M{
 				"$set": bson.M{
 					string(operationSpec.Path): operationSpec.Value,
