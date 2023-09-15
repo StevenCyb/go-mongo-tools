@@ -27,7 +27,7 @@ func (e *ExpressionRule) NewInstance(path string, _ reflect.Kind, _ interface{},
 }
 
 // NewInheritInstance instantiate new rule instance based on given rule.
-func (e *ExpressionRule) NewInheritInstance(path string, _ reflect.Kind, _ interface{}) (Rule, error) {
+func (e *ExpressionRule) NewInheritInstance(_ string, _ reflect.Kind, _ interface{}) (Rule, error) {
 	return &ExpressionRule{Expression: e.Expression, Regex: e.Regex}, nil
 }
 

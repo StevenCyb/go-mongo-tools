@@ -23,7 +23,7 @@ type objectA struct {
 	Age int `bson:"age"`
 }
 
-//nolint:unused,revive,stylecheck
+//nolint:unused,revive,stylecheck,structcheck
 type objectB struct {
 	mapping map[string]struct{ d string }
 	nested  struct {

@@ -15,11 +15,11 @@ import (
 
 type demoRule struct{}
 
-func (d demoRule) NewInstance(_ string, _ reflect.Kind, _ interface{}, value string) (rule.Rule, error) { //nolint:ireturn,lll
+func (d demoRule) NewInstance(_ string, _ reflect.Kind, _ interface{}, _ string) (rule.Rule, error) { //nolint:ireturn,lll
 	return nil, nil
 }
 
-func (d demoRule) NewInheritInstance(_ string, _ reflect.Kind, _ interface{}) (rule.Rule, error) { //nolint:ireturn,lll
+func (d demoRule) NewInheritInstance(_ string, _ reflect.Kind, _ interface{}) (rule.Rule, error) { //nolint:ireturn
 	return nil, nil
 }
 
@@ -318,6 +318,8 @@ func TestUseReferenceComplexStruct(t *testing.T) {
 }
 
 func assertDeepEqual(t *testing.T, expected, actual interface{}) {
+	t.Helper()
+
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Objects not equal. Expected %+v, but got %+v", expected, actual)
 	}

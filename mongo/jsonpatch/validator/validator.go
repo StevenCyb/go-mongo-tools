@@ -148,14 +148,12 @@ func (v *Validator) parseReferenceIterable(
 		return err
 	}
 
-	if err := v.parseReference(zeroValue.Type(), path+"*", inheritedRules); err != nil {
-		return err
-	}
+	err = v.parseReference(zeroValue.Type(), path+"*", inheritedRules)
 
-	return nil
+	return err
 }
 
-func (v *Validator) parseReferenceStruct(
+func (v *Validator) parseReferenceStruct( //nolint:funlen
 	objectType reflect.Type, path string, inheritedRules map[string]rule.Rule,
 ) error {
 	for i := 0; i < objectType.NumField(); i++ {
@@ -171,7 +169,10 @@ func (v *Validator) parseReferenceStruct(
 			continue
 		}
 
-		abstractType := ""
+		bsonName = strings.Split(bsonName, ",")[0]
+
+		var abstractType string
+
 		if kind == reflect.Ptr {
 			abstractType = field.Type.Elem().String()
 		} else {

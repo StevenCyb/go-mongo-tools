@@ -134,11 +134,11 @@ func (m MatchingKindRule) deepCompareStruct(
 		err           error
 		referenceType = referenceValue.Type()
 		objectType    = objectValue.Type()
-		currentPath   = path
+		currentPath   string
 	)
 
 	if path != "" {
-		path = path + "."
+		path += "."
 	}
 
 	for i := 0; i < objectType.NumField(); i++ {
@@ -147,6 +147,7 @@ func (m MatchingKindRule) deepCompareStruct(
 			objectName  = objectField.Name
 			found       = false
 		)
+
 		currentPath = fmt.Sprintf("%s%s", path, objectName)
 
 		for i := 0; i < referenceType.NumField(); i++ {
@@ -187,11 +188,11 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 		err           error
 		referenceType = referenceValue.Type()
 		objectType    = objectValue.Type()
-		currentPath   = path
+		currentPath   string
 	)
 
 	if path != "" {
-		path = path + "."
+		path += "."
 	}
 
 	if objectType.Key().Kind() != reflect.String {
@@ -205,6 +206,7 @@ func (m MatchingKindRule) deepCompareMapWithStruct(
 			objectField = objectValue.MapIndex(key)
 			found       = false
 		)
+
 		currentPath = fmt.Sprintf("%s%s", path, key.String())
 
 		if objectField.Kind() == reflect.Interface {

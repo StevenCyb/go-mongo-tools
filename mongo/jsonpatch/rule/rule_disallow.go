@@ -28,7 +28,7 @@ func (d *DisallowRule) NewInheritInstance(_ string, _ reflect.Kind, _ interface{
 }
 
 // Validate applies rule on given patch operation specification.
-func (d DisallowRule) Validate(operationSpec operation.Spec) error {
+func (d DisallowRule) Validate(_ operation.Spec) error {
 	if !d.Disallow {
 		return nil
 	}
