@@ -1,7 +1,5 @@
 package jsonpatch
 
-//nolint:govet
-
 import (
 	"context"
 	"reflect"
@@ -34,19 +32,56 @@ func ExecuteFailedTest(t *testing.T, parser Parser, expectedError error, operati
 
 // DummyDoc is a simple dummy doc for mongo tests.
 type DummyDoc struct {
-	C      float32           `bson:"c"`
-	Nested []DummySubDoc     `bson:"nested"`
-	Obj    DummySubDoc       `bson:"obj"`
 	ID     string            `bson:"_id" jp_disallow:"true"` //nolint:tagliatelle
 	A      string            `bson:"a"`
 	B      string            `bson:"b"`
-	D      []int             `bson:"d"`
+	Obj    DummySubDoc       `bson:"obj"`
 	E      map[string]string `bson:"e"`
+	Nested []DummySubDoc     `bson:"nested"`
+	D      []int             `bson:"d"`
+	C      float32           `bson:"c"`
 }
+
 type DummySubDoc struct {
-	Number *int   `bson:"number"`
-	Name   string `bson:"name"`
-	Gender string `bson:"gender"`
+	Number      *int         `bson:"number"`
+	NestedDummy *NestedDummy `bson:"nested_dummy,omitempty"`
+	Name        string       `bson:"name"`
+	Gender      string       `bson:"gender"`
+}
+
+type NestedDummy struct {
+	Name string `bson:"name"`
+}
+
+func TestSingleReplaceWithPointerPath(t *testing.T) {
+	t.Parallel()
+
+	parser, err := NewSmartParser(reflect.TypeOf(DummyDoc{}))
+	require.NoError(t, err)
+
+	ExecuteSuccessTest(t, *parser,
+		bson.A{
+			bson.M{"$unset": "obj.nested_dummy"},
+			bson.M{"$set": bson.M{"obj.nested_dummy": map[string]string{"name": "test"}}},
+		},
+		operation.Spec{
+			Operation: operation.ReplaceOperation,
+			Path:      operation.Path("obj.nested_dummy"),
+			Value:     map[string]string{"name": "test"},
+		},
+	)
+
+	ExecuteSuccessTest(t, *parser,
+		bson.A{
+			bson.M{"$unset": "obj.nested_dummy.name"},
+			bson.M{"$set": bson.M{"obj.nested_dummy.name": "new_value"}},
+		},
+		operation.Spec{
+			Operation: operation.ReplaceOperation,
+			Path:      operation.Path("obj.nested_dummy.name"),
+			Value:     "new_value",
+		},
+	)
 }
 
 func TestSingleRemoveOperation(t *testing.T) {

@@ -8,7 +8,6 @@ linters:
     - cyclop
     - deadcode
     - decorder
-    - depguard
     - dogsled
     - dupl
     - durationcheck
